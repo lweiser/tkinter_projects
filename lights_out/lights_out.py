@@ -25,36 +25,36 @@ class Game(tk.Frame):
     def make_button_grid(self):
         """Create the button grid."""
         total_btns = self.btn_per_side*self.btn_per_side
-        self.lbtns = {index: self.make_light_btn(index)
-                      for index in range(total_btns)}
-        self.lstatus = {index: 0 for index in range(total_btns)}
+        self.lbtns = {(i, j): self.make_light_btn(i, j)
+                      for i in range(self.btn_per_side)
+                      for j in range(self.btn_per_side)}
 
-    def make_light_btn(self, index):
+        self.lstatus = {(i, j): 0
+                        for i in range(total_btns)
+                        for j in range(total_btns)}
+
+    def make_light_btn(self, i, j):
         """Make the individual light buttons."""
         btn = tk.Button(self.parent, image=self.btn_img, text='',
                         compound=tk.CENTER,
-                        command=lambda: self.press_light(index))
+                        command=lambda: self.press_light((i, j)))
         btn.config(width=self.btn_width, height=self.btn_width)
-        btn.grid(row=index//self.btn_per_side,
-                 column=index % self.btn_per_side, sticky='NSWE')
+        btn.grid(row=i, column=j, sticky='NSWE')
         return btn
 
-    def change_color(self, index):
+    def change_color(self, i_j):
         """Change color of a button."""
-        self.lstatus[index] = (self.lstatus[index] + 1) % len(self.lcolors)
-        new_color = self.lcolors[self.lstatus[index]]
-        self.lbtns[index].configure(highlightbackground=new_color)
+        self.lstatus[i_j] = (self.lstatus[i_j] + 1) % len(self.lcolors)
+        new_color = self.lcolors[self.lstatus[i_j]]
+        self.lbtns[i_j].configure(highlightbackground=new_color)
 
-    def press_light(self, index):
+    def press_light(self, i_j):
         """Identify buttons whose colors change with click."""
-        btn_i = index//self.btn_per_side
-        btn_j = index % self.btn_per_side
-
-        # write function to return buttons to change
-        [self.change_color(i*self.btn_per_side + btn_j)
+        btn_i, btn_j = i_j
+        [self.change_color((i, btn_j))
          for i in [btn_i - 1, btn_i, btn_i + 1]
          if i >= 0 and i < self.btn_per_side]
-        [self.change_color(btn_i*self.btn_per_side + j)
+        [self.change_color((btn_i, j))
          for j in [btn_j - 1,  btn_j + 1]
          if j >= 0 and j < self.btn_per_side]
 
