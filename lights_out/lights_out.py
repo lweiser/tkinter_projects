@@ -39,11 +39,24 @@ class Game(tk.Frame):
                  column=index % self.btn_per_side, sticky='NSWE')
         return btn
 
-    def press_light(self, index):
-        """Change the color of a button when clicked."""
+    def change_color(self, index):
+        """Change color of a button."""
         self.lstatus[index] = (self.lstatus[index] + 1) % len(self.lcolors)
         new_color = self.lcolors[self.lstatus[index]]
         self.lbtns[index].configure(highlightbackground=new_color)
+
+    def press_light(self, index):
+        """Identify buttons whose colors change with click."""
+        btn_i = index//self.btn_per_side
+        btn_j = index % self.btn_per_side
+
+        # write function to return buttons to change
+        [self.change_color(i*self.btn_per_side + btn_j)
+         for i in [btn_i - 1, btn_i, btn_i + 1]
+         if i >= 0 and i < self.btn_per_side]
+        [self.change_color(btn_i*self.btn_per_side + j)
+         for j in [btn_j - 1,  btn_j + 1]
+         if j >= 0 and j < self.btn_per_side]
 
 
 root = tk.Tk()
