@@ -37,12 +37,13 @@ class Game(tk.Frame):
                                    state="disabled")
         self.cbtns['quit'] = tk.Button(self.parent, text="Quit",
                                        command=root.destroy)
-        self.cbtns['new'].grid(column=0, row=6)
-        #self.cbtns['restart'].grid(column=1, row=6)
-        #self.cbtns['custom'].grid(column=2, row=6)
-        #self.cbtns['choose'].grid(column=3, row=6)
-        #self.choose_txt.grid(column=3, row=7)
-        self.cbtns['quit'].grid(column=4, row=6)
+        self.cbtns['new'].grid(column=0, row=self.btn_per_side + 1)
+        #self.cbtns['restart'].grid(column=1, row=crow)
+        #self.cbtns['custom'].grid(column=2, row=crow)
+        #self.cbtns['choose'].grid(column=3, row=crow)
+        #self.choose_txt.grid(column=3, row=crow+1)
+        self.cbtns['quit'].grid(column=self.btn_per_side - 1,
+                                row=self.btn_per_side + 1)
 
     def make_button_grid(self):
         """Create the button grid."""
