@@ -28,9 +28,12 @@ class Game(tk.Frame):
     def make_control_buttons(self):
         """Make the buttons that control gameplay."""
         self.cbtns = {}
-        self.cbtns['new'] = tk.Button(self.parent, text="New Game",
+        self.cbtns['new'] = tk.Button(self.parent,
+                                      text="New Game",
                                       command=self.press_new)
-        self.cbtns['restart'] = tk.Button(self.parent, text="Restart")
+        self.cbtns['restart'] = tk.Button(self.parent,
+                                          text="Restart",
+                                          command=self.reset_start_conf)
         self.cbtns['custom'] = tk.Button(self.parent, text="Custom")
         self.cbtns['choose'] = tk.Button(self.parent, text="Choose\n Game")
         self.choose_txt = tk.Entry(self.parent, width=self.btn_width//10,
@@ -38,38 +41,31 @@ class Game(tk.Frame):
         self.cbtns['quit'] = tk.Button(self.parent, text="Quit",
                                        command=root.destroy)
         self.cbtns['new'].grid(column=0, row=self.btn_per_side + 1)
-        #self.cbtns['restart'].grid(column=1, row=crow)
-        #self.cbtns['custom'].grid(column=2, row=crow)
-        #self.cbtns['choose'].grid(column=3, row=crow)
-        #self.choose_txt.grid(column=3, row=crow+1)
+        # self.cbtns['restart'].grid(column=1, row=self.btn_per_side + 1)
+        #  self.cbtns['custom'].grid(column=2, row=self.btn_per_side + 1)
+        #  self.cbtns['choose'].grid(column=3, row=self.btn_per_side + 1)
+        #  self.choose_txt.grid(column=3, row=self.btn_per_side + 2)
         self.cbtns['quit'].grid(column=self.btn_per_side - 1,
                                 row=self.btn_per_side + 1)
 
     def make_button_grid(self):
         """Create the button grid."""
-        total_btns = self.btn_per_side*self.btn_per_side
         self.lbtns = {(i, j): self.make_light_btn(i, j)
                       for i in range(self.btn_per_side)
                       for j in range(self.btn_per_side)}
 
         self.lstatus = {(i, j): 0
-                        for i in range(total_btns)
-                        for j in range(total_btns)}
+                        for i in range(self.btn_per_side)
+                        for j in range(self.btn_per_side)}
 
     def make_light_btn(self, i, j):
         """Make the individual light buttons."""
         btn = tk.Button(self.parent, image=self.btn_img, text='',
                         compound=tk.CENTER,
-                        command=lambda: self.press_light((i, j)))
-        btn.config(width=self.btn_width, height=self.btn_width)
+                        command=lambda: self.press_light((i, j)),
+                        width=self.btn_width, height=self.btn_width)
         btn.grid(row=i, column=j, sticky='NSWE')
         return btn
-
-    def change_color(self, i_j):
-        """Change color of a button."""
-        self.lstatus[i_j] = (self.lstatus[i_j] + 1) % len(self.lcolors)
-        new_color = self.lcolors[self.lstatus[i_j]]
-        self.lbtns[i_j].configure(highlightbackground=new_color, bg=new_color)
 
     def press_light(self, i_j):
         """Identify buttons whose colors change with click."""
@@ -81,14 +77,35 @@ class Game(tk.Frame):
          for j in [btn_j - 1,  btn_j + 1]
          if j >= 0 and j < self.btn_per_side]
 
+        # check for win condition:
+        if all(value == 0 for value in self.lstatus.values()):
+            self.announce_win()
+
+    def change_color(self, i_j):
+        """Change color of a button."""
+        self.lstatus[i_j] = (self.lstatus[i_j] + 1) % len(self.lcolors)
+        new_color = self.lcolors[self.lstatus[i_j]]
+        self.lbtns[i_j].configure(highlightbackground=new_color, bg=new_color)
+
+    def announce_win(self):
+        """Popup window o announce win."""
+        win = tk.Toplevel()
+
+
     def press_new(self):
-        """Generate a random starting conf and set lights."""
+        """Randomly pick from a predefined starting random and set lights."""
         self.get_start_layout()
+        self.reset_start_conf()
+        # show the restart button
+        self.cbtns['restart'].grid(column=1, row=self.btn_per_side + 1)
+
+    def reset_start_conf(self):
+        """Return the light configuration to the starting configuration."""
         for i_j, value in self.lstatus_start.items():
+            self.lstatus[i_j] = value
             new_color = self.lcolors[value]
             self.lbtns[i_j].configure(highlightbackground=new_color,
                                       bg=new_color)
-            self.lstatus[i_j] = value
 
     def get_start_layout(self, game_number=None):
         """Return the starting light layout.
