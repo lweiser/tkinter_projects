@@ -3,12 +3,46 @@ import tkinter as tk
 import random
 
 
+class PickGame(object):
+    """Pop-up window in lights out game, allows selection of game by number."""
+
+    def __init__(self, parent):
+        top = self.top = tk.Toplevel(parent)
+        top.title('Pick a Game')
+        self.choice = tk.Entry(top, width=10)
+        self.maxlim = len(parent._start_confs)*2
+        self.entry_label = tk.Label(top,
+                                    text='Choose a game number between ' +
+                                    '1 and {}:'.format(self.maxlim))
+        self.start_btn = tk.Button(top, text='Start',
+                                   command=lambda: self._start(parent,
+                                                               self.choice))
+        self.entry_label.pack()
+        self.choice.pack()
+        self.start_btn.pack()
+
+    def _start(self, parent, choice):
+        """Execute start button function."""
+        choice = int(self.choice.get()) - 1
+        while(True):
+            if choice >= 0 and choice < self.maxlim:
+                break
+            else:
+                self.entry_label.config(text='Retry: Number must be between 1'
+                                        + 'and {}:'.format(self.maxlim))
+        parent.cbtns['new'].config(state='normal')
+        parent.cbtns['pick'].config(state='normal')
+        parent.cbtns['restart'].grid(column=1, row=parent.btn_per_side + 1)
+        for btn in parent.lbtns.values():
+            btn.config(state='normal')
+        parent.get_start_layout(choice)
+        parent.reset_start_conf()
+        self.top.destroy()
+
 class Game(tk.Frame):
     """GUI application for a simple button based game."""
 
-    # I don't understand why I need this.
-
-    btn_width = 75
+    btn_width = 80
     btn_per_side = 5
     lcolors = ['White', 'red']
 
@@ -35,16 +69,14 @@ class Game(tk.Frame):
                                           text="Restart",
                                           command=self.reset_start_conf)
         self.cbtns['custom'] = tk.Button(self.parent, text="Custom")
-        self.cbtns['choose'] = tk.Button(self.parent, text="Choose\n Game")
-        self.choose_txt = tk.Entry(self.parent, width=self.btn_width//10,
-                                   state="disabled")
+        self.cbtns['pick'] = tk.Button(self.parent, text="Pick Game",
+                                       command=self.press_pick)
         self.cbtns['quit'] = tk.Button(self.parent, text="Quit",
                                        command=root.destroy)
         self.cbtns['new'].grid(column=0, row=self.btn_per_side + 1)
         # self.cbtns['restart'].grid(column=1, row=self.btn_per_side + 1)
         #  self.cbtns['custom'].grid(column=2, row=self.btn_per_side + 1)
-        #  self.cbtns['choose'].grid(column=3, row=self.btn_per_side + 1)
-        #  self.choose_txt.grid(column=3, row=self.btn_per_side + 2)
+        self.cbtns['pick'].grid(column=3, row=self.btn_per_side + 1)
         self.cbtns['quit'].grid(column=self.btn_per_side - 1,
                                 row=self.btn_per_side + 1)
 
@@ -61,7 +93,7 @@ class Game(tk.Frame):
     def make_light_btn(self, i, j):
         """Make the individual light buttons."""
         btn = tk.Button(self.parent, image=self.btn_img, text='',
-                        compound=tk.CENTER,
+                        compound=tk.CENTER, state='disabled',
                         command=lambda: self.press_light((i, j)),
                         width=self.btn_width, height=self.btn_width)
         btn.grid(row=i, column=j, sticky='NSWE')
@@ -89,8 +121,29 @@ class Game(tk.Frame):
 
     def announce_win(self):
         """Popup window o announce win."""
+        self.win_animation()
         win = tk.Toplevel()
+        win_txt = tk.Label(win, text='You Win!')
+        win_txt.pack()
+        win_btn = tk.Button(win, text='OK', command=win.destroy)
+        win_btn.pack()
+        for btn in self.lbtns.values():
+            btn.config(state='disabled')
+        self.cbtns['restart'].grid_remove()
 
+    def win_animation(self):
+        """Create an animation with win."""
+        pass
+
+    def press_custum():
+        """Enable creation of a custom board."""
+        pass
+
+    def press_pick(self):
+        """Allow User to choose a game by game number."""
+        self.cbtns['new'].config(state='disabled')
+        self.cbtns['pick'].config(state='disabled')
+        win = PickGame(self)
 
     def press_new(self):
         """Randomly pick from a predefined starting random and set lights."""
@@ -98,6 +151,8 @@ class Game(tk.Frame):
         self.reset_start_conf()
         # show the restart button
         self.cbtns['restart'].grid(column=1, row=self.btn_per_side + 1)
+        for btn in self.lbtns.values():
+            btn.config(state='normal')
 
     def reset_start_conf(self):
         """Return the light configuration to the starting configuration."""
